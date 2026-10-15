@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update -y \
  && apt-get install -y --no-install-recommends \
-      python3 python3-venv mysql-client ca-certificates \
+      python3 python3-venv mysql-client iputils-ping ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
