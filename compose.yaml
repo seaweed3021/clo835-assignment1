@@ -1,22 +1,20 @@
 # CLO835 - Assignment 1 - the whole stack in one command.
-#
 #   docker compose up -d      start everything
 #   docker compose ps         see it running
 #   docker compose down -v    stop it and delete the volume
-#
-# Compose creates a user-defined bridge network for you, so the web tier
-# reaches the data tier by the service name "mysql-db". No IP address is needed.
 
 services:
   mysql-db:
     build:
       context: .
       dockerfile: Dockerfile_mysql
-    image: my_db
+    image: aneeta3021/mysql-db:v1
     environment:
       MYSQL_ROOT_PASSWORD: pw
     volumes:
       - mysql-data:/var/lib/mysql
+    networks:
+      - app-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-uroot", "-ppw"]
       interval: 5s
@@ -25,7 +23,7 @@ services:
 
   blue:
     build: .
-    image: my_app
+    image: aneeta3021/webapp:v2
     ports: ["8081:8080"]
     environment: &app_env
       DBHOST: mysql-db
@@ -34,29 +32,39 @@ services:
       DBPWD: pw
       DATABASE: employees
       APP_COLOR: blue
+    networks:
+      - app-net
     depends_on:
       mysql-db:
         condition: service_healthy
 
   pink:
-    image: my_app
+    image: aneeta3021/webapp:v2
     ports: ["8082:8080"]
     environment:
       <<: *app_env
       APP_COLOR: pink
+    networks:
+      - app-net
     depends_on:
       mysql-db:
         condition: service_healthy
 
   lime:
-    image: my_app
+    image: aneeta3021/webapp:v2
     ports: ["8083:8080"]
     environment:
       <<: *app_env
       APP_COLOR: lime
+    networks:
+      - app-net
     depends_on:
       mysql-db:
         condition: service_healthy
+
+networks:
+  app-net:
+    driver: bridge
 
 volumes:
   mysql-data:
